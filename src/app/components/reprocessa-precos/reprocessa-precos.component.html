@@ -1,0 +1,14 @@
+<po-info p-label="Reprocessa preços" p-value="Selecione os parâmetros para reprocessamento de preços:"></po-info>
+<po-divider></po-divider>
+
+<po-dynamic-form #dynamicForm [p-fields]="fields" [p-validate]="this.onChangeFields.bind(this)"
+  [p-validate-fields]="validateFields" p-value="any">
+</po-dynamic-form>
+
+<br />
+<div class="po-row">
+  <po-button class="po-md-12" p-label="Reprocessar" [p-disabled]="!isFormValid()" (p-click)="submitFormData()">
+  </po-button>
+</div>
+
+

@@ -1,0 +1,25 @@
+<br />
+<po-page-dynamic-search
+  (p-quick-search)="searchProducts($event)"
+  p-title="Lista de produtos"
+>
+  <po-table
+    [p-auto-collapse]="true"
+    [p-columns]="columns"
+    [p-hide-table-search]="true"
+    [p-items]="products"
+    [p-sort]="true"
+    [p-striped]="true"
+    [p-actions-right]="true"
+    [p-loading]="isLoading"
+    [p-show-more-disabled]="!hasMore"
+    (p-show-more)="loadMoreProducts()"
+    p-container="shadow"
+    [p-height]="700"
+    [p-infinite-scroll]="true"
+    [p-hide-columns-manager]="true"
+    [p-actions]="actions"
+  >
+  </po-table>
+  <br /><br /><br />
+</po-page-dynamic-search>

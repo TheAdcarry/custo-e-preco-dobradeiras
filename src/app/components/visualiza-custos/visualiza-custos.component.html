@@ -1,0 +1,15 @@
+<po-info
+  p-label="Log de custos"
+  p-value="Abaixo o memorial de cálculo do custo contábil:"
+></po-info>
+<br />
+<po-table
+  [p-columns]="columns"
+  [p-draggable]="true"
+  [p-hide-columns-manager]="true"
+  [p-items]="items"
+  [p-show-more-disabled]="!hasMore"
+  (p-show-more)="loadMoreCosts()"
+  [p-loading]="isLoading"
+>
+</po-table>

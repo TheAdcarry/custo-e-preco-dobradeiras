@@ -7,8 +7,9 @@ import {
   PoTableColumn,
 } from '@po-ui/ng-components';
 import { ApiUrls } from '../../../api/api.config';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { formatDate } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-visualiza-custos',
@@ -73,30 +74,37 @@ export class VisualizaCustosComponent implements OnInit {
 
   private getApiUrl(): string {
     const baseUrl = `${ApiUrls.LOG_CUSTOS_VISUALIZA_CUSTOS}/${this.rowData.product}?page=${this.currentPage}&pageSize=5`;
-    console.log(baseUrl);
     return baseUrl;
   }
 
   private fetchCosts(url: string): void {
     this.isLoading = true;
-  
-    this.http.get<{ items: any[]; hasNext: boolean }>(url).subscribe({
-      next: ({ items, hasNext }) => {
-        const formattedItems = items.map(item => ({
-          ...item,
-          date: formatDate(item.date, 'dd/MM/yyyy', 'en-US'),
-        }));
-  
-        this.items = [...this.items, ...formattedItems];
-        this.hasMore = hasNext;
-        if (hasNext) this.currentPage++;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Erro ao carregar os custos:', err);
-        this.isLoading = false;
-      },
+
+    const headers = new HttpHeaders({
+      'Authorization': `Basic ${btoa(`${environment.username}:${environment.password}`)}`,
+      'Content-Type': 'application/json; charset=utf-8',
+      'Accept': '*/*',
     });
+
+    this.http
+      .get<{ items: any[]; hasNext: boolean }>(url, { headers })
+      .subscribe({
+        next: ({ items, hasNext }) => {
+          const formattedItems = items.map(item => ({
+            ...item,
+            date: formatDate(item.date, 'dd/MM/yyyy', 'en-US'),
+          }));
+
+          this.items = [...this.items, ...formattedItems];
+          this.hasMore = hasNext;
+          if (hasNext) this.currentPage++;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Erro ao carregar os custos:', err);
+          this.isLoading = false;
+        },
+      });
   }
 
   loadMoreCosts(): void {

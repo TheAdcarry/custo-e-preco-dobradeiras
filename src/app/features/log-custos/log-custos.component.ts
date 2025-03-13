@@ -7,12 +7,11 @@ import {
   PoTableModule,
   PoTableAction,
 } from '@po-ui/ng-components';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { ApiUrls } from '../../../api/api.config';
+import { HttpClient } from '@angular/common/http';
+import { ApiUrls } from '../../api/api.config';
 import { PoPageDynamicSearchModule } from '@po-ui/ng-templates';
 import { Router } from '@angular/router';
-import { DataService } from '../../../services/Data.service';
-import { environment } from '../../../environments/environment';
+import { DataService } from '../../core/services/Data.service';
 
 @Component({
   selector: 'app-log-custos',
@@ -42,9 +41,9 @@ export class LogCustosComponent implements OnInit {
   private currentFilter: string | null = null;
 
   constructor(
-    private http: HttpClient,
-    private router: Router,
-    private dataService: DataService
+    private readonly http: HttpClient,
+    private readonly router: Router,
+    private readonly dataService: DataService
   ) {}
 
   ngOnInit(): void {
@@ -78,25 +77,17 @@ export class LogCustosComponent implements OnInit {
   private fetchProducts(url: string): void {
     this.isLoading = true;
 
-    const headers = new HttpHeaders({
-      'Authorization': `Basic ${btoa(`${environment.username}:${environment.password}`)}`,
-      'Content-Type': 'application/json; charset=utf-8',
-      'Accept': '*/*',
+    this.http.get<{ items: any[]; hasNext: boolean }>(url).subscribe({
+      next: ({ items, hasNext }) => {
+        this.products = [...this.products, ...items];
+        this.hasMore = hasNext;
+        if (hasNext) this.currentPage++;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
+      },
     });
-
-    this.http
-      .get<{ items: any[]; hasNext: boolean }>(url, { headers })
-      .subscribe({
-        next: ({ items, hasNext }) => {
-          this.products = [...this.products, ...items];
-          this.hasMore = hasNext;
-          if (hasNext) this.currentPage++;
-          this.isLoading = false;
-        },
-        error: () => {
-          this.isLoading = false;
-        },
-      });
   }
 
   private getApiUrl(): string {

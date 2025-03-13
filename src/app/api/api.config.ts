@@ -1,4 +1,4 @@
-import { environment } from "../environments/environment";
+import { environment } from "../../environments/environment"
 
 export const ApiUrls = {
     GROUPS: `${environment.apiBaseUrl}/api/v1/groups`,

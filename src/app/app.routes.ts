@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { LogCustosComponent } from './components/log-custos/log-custos.component';
-import { ReprocessaPrecosComponent } from './components/reprocessa-precos/reprocessa-precos.component';
-import { AjudaComponent } from './components/ajuda/ajuda.component';
-import { VisualizaCustosComponent } from './components/visualiza-custos/visualiza-custos.component';
+import { LogCustosComponent } from './features/log-custos/log-custos.component';
+import { ReprocessaPrecosComponent } from './features/reprocessa-precos/reprocessa-precos.component';
+import { AjudaComponent } from './features/ajuda/ajuda.component';
+import { VisualizaCustosComponent } from './features/visualiza-custos/visualiza-custos.component';
 
 export const routes: Routes = [
     { path: 'log-custos', title: 'Log custos', component: LogCustosComponent },

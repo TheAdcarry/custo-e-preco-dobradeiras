@@ -5,7 +5,7 @@ import {
   ProtheusLibCoreModule,
   ProAppConfigService,
 } from '@totvs/protheus-lib-core';
-import { LoadingService } from '../services/Loading.service';
+import { LoadingService } from './core/services/Loading.service';
 
 import {
   PoMenuItem,

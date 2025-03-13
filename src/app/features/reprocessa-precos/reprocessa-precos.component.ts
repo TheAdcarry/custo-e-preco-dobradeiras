@@ -8,33 +8,27 @@ import {
   PoDynamicFormValidation,
   PoDynamicFormFieldChanged,
   PoNotificationService,
-  PoDividerModule
+  PoDividerModule,
 } from '@po-ui/ng-components';
-import { ApiUrls } from '../../../api/api.config';
-import { isRangeValid } from '../../utils/validation.helper';
-import { ReprocessaPrecosService } from '../../../services/ReprocessaPrecos.service';
-import { LoadingService } from '../../../services/Loading.service';
+import { ApiUrls } from '../../api/api.config';
+import { isRangeValid } from '../../shared/validation.helper';
+import { ReprocessaPrecosService } from '../../core/services/ReprocessaPrecos.service';
+import { LoadingService } from '../../core/services/Loading.service';
 
 @Component({
   selector: 'app-reprocessa-precos',
   standalone: true,
   imports: [PoInfoModule, PoDynamicModule, PoButtonModule, PoDividerModule],
   templateUrl: './reprocessa-precos.component.html',
-  styleUrls: ['./reprocessa-precos.component.css']
+  styleUrls: ['./reprocessa-precos.component.css'],
 })
 export class ReprocessaPrecosComponent {
   @ViewChild('dynamicForm') dynamicForm!: PoDynamicFormComponent;
 
-  constructor(
-    public poNotification: PoNotificationService,
-    private httpPost: ReprocessaPrecosService,
-    private loadingService: LoadingService
-  ) { }
-
-  fields: Array<PoDynamicFormField> = [
+  public fields: PoDynamicFormField[] = [
     {
       property: 'branchs',
-      label: "Filial(is)",
+      label: 'Filial(is)',
       required: true,
       optionsMulti: true,
       gridColumns: 12,
@@ -42,62 +36,82 @@ export class ReprocessaPrecosComponent {
     },
     {
       property: 'table',
-      label: "Tabela(s)",
+      label: 'Tabela(s)',
       required: true,
       optionsMulti: false,
       gridColumns: 6,
-      options: ["Distribuidora", "Importadora", "Ambos"]
+      options: ['Distribuidora', 'Importadora', 'Ambos'],
     },
     {
       property: 'type',
-      label: "Tipo",
+      label: 'Tipo',
       required: true,
       optionsMulti: false,
       gridColumns: 6,
-      options: ["Grupo", "Similar", "Produto"]
+      options: ['Grupo', 'Similar', 'Produto'],
     },
-    { property: 'typeFrom', label: '', gridColumns: 6, disabled: true, visible: true },
-    { property: 'typeTo', label: '', gridColumns: 6, disabled: true, visible: true }
+    {
+      property: 'typeFrom',
+      label: '',
+      gridColumns: 6,
+      disabled: true,
+      visible: true,
+    },
+    {
+      property: 'typeTo',
+      label: '',
+      gridColumns: 6,
+      disabled: true,
+      visible: true,
+    },
   ];
 
-  validateFields: Array<string> = ["type"];
+  public validateFields: string[] = ['type'];
 
-  submitFormData() {
-    if (this.validateRange()) {
-      const data = this.dynamicForm.form.value
+  constructor(
+    public readonly poNotification: PoNotificationService,
+    private readonly httpPost: ReprocessaPrecosService,
+    private readonly loadingService: LoadingService
+  ) {}
 
-      this.loadingService.setLoading(true)
+  submitFormData(): void {
+    if (!this.validateRange()) return;
 
-      this.httpPost.sendData(data).subscribe(
-        (response) => {
-          this.poNotification.success("Preços reprocessados com sucesso!")
-          this.loadingService.setLoading(false)
-        },
-        (error) => {
-          this.poNotification.error("Erro ao reprocessar os preços!")
-          this.loadingService.setLoading(false)
-        }
-      )
-    }
+    const data = this.dynamicForm.form.value;
+    this.loadingService.setLoading(true);
+
+    this.httpPost.sendData(data).subscribe(
+      () => {
+        this.poNotification.success('Preços reprocessados com sucesso!');
+        this.loadingService.setLoading(false);
+      },
+      () => {
+        this.poNotification.error('Erro ao reprocessar os preços!');
+        this.loadingService.setLoading(false);
+      }
+    );
   }
 
   isFormValid(): boolean {
     return this.dynamicForm?.form?.valid ?? false;
   }
 
-  onChangeFields(changedValue: PoDynamicFormFieldChanged): PoDynamicFormValidation {
+  onChangeFields(
+    changedValue: PoDynamicFormFieldChanged
+  ): PoDynamicFormValidation {
     const type = this.dynamicForm.form.value.type;
     const updatedFields = this.getTypeFieldsConfig(type);
 
     this.clearFields(['typeFrom', 'typeTo']);
 
-    return { fields: updatedFields, focus: "typeFrom" };
+    return { fields: updatedFields, focus: 'typeFrom' };
   }
 
-  private clearFields(fields: Array<string>): void {
-    fields.forEach(field => {
-      if (this.dynamicForm.form.controls[field]) {
-        this.dynamicForm.form.controls[field].setValue('');
+  private clearFields(fields: string[]): void {
+    fields.forEach((field) => {
+      const control = this.dynamicForm.form.controls[field];
+      if (control) {
+        control.setValue('');
       }
     });
   }
@@ -107,15 +121,15 @@ export class ReprocessaPrecosComponent {
     placeholderTo: string,
     mask: string,
     searchService?: string,
-    columns?: Array<{ property: string, label: string }>,
+    columns?: Array<{ property: string; label: string }>,
     fieldValue?: string,
-    format?: Array<string>
-  ): Array<PoDynamicFormField> {
+    format?: string[]
+  ): PoDynamicFormField[] {
     const baseFieldConfig = {
       disabled: false,
       clean: true,
       required: true,
-      gridColumns: 6
+      gridColumns: 6,
     };
 
     return [
@@ -127,7 +141,7 @@ export class ReprocessaPrecosComponent {
         searchService,
         columns,
         fieldValue,
-        format
+        format,
       },
       {
         ...baseFieldConfig,
@@ -137,27 +151,29 @@ export class ReprocessaPrecosComponent {
         searchService,
         columns,
         fieldValue,
-        format
-      }
+        format,
+      },
     ];
   }
 
-  private getColumnsConfig(type: string): Array<{ property: string, label: string }> {
+  private getColumnsConfig(
+    type: string
+  ): Array<{ property: string; label: string }> {
     switch (type) {
       case 'Grupo':
         return [
           { property: 'group', label: 'Grupo' },
-          { property: 'description', label: 'Descrição' }
+          { property: 'description', label: 'Descrição' },
         ];
       case 'Similar':
         return [
           { property: 'similar', label: 'Similar' },
-          { property: 'description', label: 'Descrição' }
+          { property: 'description', label: 'Descrição' },
         ];
       case 'Produto':
         return [
           { property: 'product', label: 'Produto' },
-          { property: 'description', label: 'Descrição' }
+          { property: 'description', label: 'Descrição' },
         ];
       default:
         return [];
@@ -177,7 +193,7 @@ export class ReprocessaPrecosComponent {
     }
   }
 
-  private getFormat(type: string): Array<string> {
+  private getFormat(type: string): string[] {
     switch (type) {
       case 'Grupo':
         return ['group', 'description'];
@@ -203,7 +219,7 @@ export class ReprocessaPrecosComponent {
     }
   }
 
-  private getTypeFieldsConfig(type: string): Array<PoDynamicFormField> {
+  private getTypeFieldsConfig(type: string): PoDynamicFormField[] {
     return this.createRangeFieldPair(
       `${type} De`,
       `${type} Até`,
@@ -230,14 +246,10 @@ export class ReprocessaPrecosComponent {
 
   private validateRange(): boolean {
     const { typeFrom, typeTo } = this.dynamicForm.form.value;
-
     if (!isRangeValid(typeFrom, typeTo)) {
       this.poNotification.error('Parâmetros "de" e "até" inválidos');
       return false;
     }
-
     return true;
-
   }
-
 }

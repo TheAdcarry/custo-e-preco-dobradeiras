@@ -1,15 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { DataService } from '../../../services/Data.service';
+import { DataService } from '../../core/services/Data.service';
 import {
   PoInfoModule,
   PoTableModule,
   PoTableColumn,
 } from '@po-ui/ng-components';
-import { ApiUrls } from '../../../api/api.config';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { ApiUrls } from '../../api/api.config';
+import { HttpClient } from '@angular/common/http';
 import { formatDate } from '@angular/common';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-visualiza-custos',
@@ -19,17 +18,17 @@ import { environment } from '../../../environments/environment';
   styleUrls: ['./visualiza-custos.component.css'],
 })
 export class VisualizaCustosComponent implements OnInit {
-  rowData: any;
-  columns: PoTableColumn[] = [];
-  items: any[] = [];
-  isLoading = false;
-  hasMore = true;
+  public rowData: any;
+  public columns: PoTableColumn[] = [];
+  public items: any[] = [];
+  public isLoading = false;
+  public hasMore = true;
   private currentPage = 1;
 
   constructor(
-    private dataService: DataService,
-    private router: Router,
-    private http: HttpClient
+    private readonly dataService: DataService,
+    private readonly router: Router,
+    private readonly http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -37,7 +36,6 @@ export class VisualizaCustosComponent implements OnInit {
     this.rowData = this.dataService.getRowData();
 
     if (!this.rowData) {
-      console.error('Nenhum dado foi enviado para visualiza-custos.');
       this.router.navigate(['/']);
     } else {
       this.loadCosts();
@@ -68,46 +66,38 @@ export class VisualizaCustosComponent implements OnInit {
     ];
   }
 
-  loadCosts(): void {
+  public loadCosts(): void {
     this.fetchCosts(this.getApiUrl());
   }
 
   private getApiUrl(): string {
-    const baseUrl = `${ApiUrls.LOG_CUSTOS_VISUALIZA_CUSTOS}/${this.rowData.product}?page=${this.currentPage}&pageSize=5`;
-    return baseUrl;
+    return `${ApiUrls.LOG_CUSTOS_VISUALIZA_CUSTOS}/${this.rowData.product}?page=${this.currentPage}&pageSize=5`;
   }
 
   private fetchCosts(url: string): void {
     this.isLoading = true;
 
-    const headers = new HttpHeaders({
-      'Authorization': `Basic ${btoa(`${environment.username}:${environment.password}`)}`,
-      'Content-Type': 'application/json; charset=utf-8',
-      'Accept': '*/*',
+    this.http.get<{ items: any[]; hasNext: boolean }>(url).subscribe({
+      next: ({ items, hasNext }) => {
+        const formattedItems = items.map((item) => ({
+          ...item,
+          date: formatDate(item.date, 'dd/MM/yyyy', 'en-US'),
+        }));
+
+        this.items = [...this.items, ...formattedItems];
+        this.hasMore = hasNext;
+        if (hasNext) {
+          this.currentPage++;
+        }
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.isLoading = false;
+      },
     });
-
-    this.http
-      .get<{ items: any[]; hasNext: boolean }>(url, { headers })
-      .subscribe({
-        next: ({ items, hasNext }) => {
-          const formattedItems = items.map(item => ({
-            ...item,
-            date: formatDate(item.date, 'dd/MM/yyyy', 'en-US'),
-          }));
-
-          this.items = [...this.items, ...formattedItems];
-          this.hasMore = hasNext;
-          if (hasNext) this.currentPage++;
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error('Erro ao carregar os custos:', err);
-          this.isLoading = false;
-        },
-      });
   }
 
-  loadMoreCosts(): void {
+  public loadMoreCosts(): void {
     if (this.hasMore && !this.isLoading) {
       this.loadCosts();
     }
